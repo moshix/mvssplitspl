@@ -10,7 +10,7 @@ File splitter for MVS 3.8j TK4- Spool files.
   * either from an already ASCII file.
   * or by listening directly to a sockdev.
 * Splits it into one file per job.
-* Converts each job printout to PDF.
+* Converts each job printout to PDF (by using *enscript* and *ps2pdf*).
 * Can separate printouts per MSGCLASS and/or ROOM.
 * Only tested in Linux.
 
@@ -37,7 +37,7 @@ optional arguments:
                         needed.
 ```
 
-To separate by room (-r, --seprrom) the JCL must have, right after the JOB card: */\*JOBPARM ROOM=xxxx*
+To separate by room (-r, --seproom) the JCL must have, right after the JOB card: */\*JOBPARM ROOM=xxxx*
 
 Where xxxx is a 1 to 4 characters descriptor.
 
@@ -49,3 +49,6 @@ Where xxxx is a 1 to 4 characters descriptor.
   * Connects to 192.168.0.74 at port 1403 and creates PDF files, separated by MSGCLASS and ROOM into a directory called *spool* in your home directory.
 * **mvssplitspl -in prt00e.txt ~/spool**
   * Processes a file called *prt00e.txt* and creates PDF files into a directory called *spool* in your home directory.
+  
+## Dependencies
+  **enscript** and **ps2pdf** need to installed and in the path of your computer running this.

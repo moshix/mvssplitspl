@@ -17,7 +17,7 @@ DEPENDENCIES:
 	  need to installed and in the path of your computer running this.
 
 BUGS:
-	1) Some error when processing prt00f.txt
+	* Some error when processing prt00f.txt
 		Traceback (most recent call last):
 		File "./mvssplitspl.py", line 173, in <module>
 			splitter.splitJobs()
@@ -26,6 +26,10 @@ BUGS:
 		File "/usr/lib/python3.6/codecs.py", line 321, in decode
 			(result, consumed) = self._buffer_decode(data, self.errors, final)
 		UnicodeDecodeError: 'utf-8' codec can't decode byte 0xd7 in position 4862: invalid continuation byte
+
+CHANGELOG:
+	v0.1.1: Beta release: Solved bugs with PDF filename: jobType missing, no leading zeros when hour < 10, job name truncated
+	v0.1.0: Beta release: First release
 
 ---------------------------LICENSE NOTICE-------------------------------- 
 MIT License
@@ -58,13 +62,13 @@ import os
 import socket
 
 __pgmname__ = "mvssplitspl"
-__version__ = "v0.1.0"
+__version__ = "v0.1.1"
 
 ################################################################
 class SplitSpool:
 	############################################################
 	# class init
-	def __init__(self, outdir, seproom, sepmsgclass):
+	def __init__(self, outdir, seproom, sepmsgclass, debug):
 		self.outputdir = outdir
 		# Job information
 		self.jobType = ''
@@ -89,6 +93,7 @@ class SplitSpool:
 		
 		self.seproom = seproom
 		self.sepmsgclass = sepmsgclass
+		self.debug = debug
 		self.outputfilename = ''
 
 	############################################################
@@ -166,10 +171,10 @@ class SplitSpool:
 	#   used to compose the final filename of the PDF
 	def extractJobInfo(self, line):
 		self.jobMSGCLASS	= line[4:5]
-		self.jobNumber		= line[19:22]
-		self.jobName		= line[24:45].strip()
+		self.jobNumber		= line[18:22].strip()
+		self.jobName		= line[24:55].strip()
 		self.jobRoom		= line[61:65].strip()
-		self.jobTimeHour	= line[67:69]
+		self.jobTimeHour	= (str(line[67:69]).strip()).zfill(2)
 		self.jobTimeMinutes	= line[70:72]
 		self.jobTimeSeconds	= line[73:75]
 		self.jobTimeAMPM	= line[76:78]
@@ -183,11 +188,11 @@ class SplitSpool:
 			self.jobTimeHour = self.convertAMto24h(self.jobTimeHour)
 
 		# Detect type of job
-		if line.find("JOB", 14,16) > 0:
+		if line.find("JOB", 14,17) > 0:
 			self.jobType = 'J'
-		elif line.find("STC", 14,16) > 0:
+		elif line.find("STC", 14,17) > 0:
 			self.jobType = 'S'
-		elif line.find("TSU", 14,16) > 0:
+		elif line.find("TSU", 14,17) > 0:
 			self.jobType = 'T'
 
 	############################################################
@@ -216,7 +221,8 @@ class SplitSpool:
 		# Call external programs enscript and ps2pdf to get the final PDF file
 		subprocess.run(["enscript", "--quiet", "--font=Courier-Bold@8", "-l", "-H1", "-r", \
 						"--margins=25:25:40:40", "-p", "- ", filename_prt, "-o", filename_ps])
-		os.remove(filename_prt)
+		if not self.debug:
+			os.remove(filename_prt)
 		subprocess.run(["ps2pdf", filename_ps, filename_pdf])
 		os.remove(filename_ps)
 
@@ -311,6 +317,7 @@ if __name__ == "__main__":
 	parser.add_argument("outdir", help="destination directory for PDFs")
 	parser.add_argument("-r", "--seproom", action="store_true", default=False, help="Separate outputs per ROOM. Directory created if needed.")
 	parser.add_argument("-c", "--sepmsgclass", action="store_true", default=False, help="Separate outputs per MSGCLASS. Directory created if needed.")
+	parser.add_argument("-d", "--debug", action="store_true", default=False, help="Do not delete .prt files")
 
 	args = parser.parse_args()
 	
@@ -318,7 +325,7 @@ if __name__ == "__main__":
 	if args.outdir.endswith('/'):
 		args.outdir = args.outdir[0:len(args.outdir) - 1]
 
-	splitter = SplitSpool(args.outdir, args.seproom, args.sepmsgclass)
+	splitter = SplitSpool(args.outdir, args.seproom, args.sepmsgclass, args.debug)
 
 	if args.infile:
 		# Process an already existing file
