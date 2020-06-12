@@ -95,80 +95,84 @@ function getJobNumber($info){
 				</table>
 			</center>
 		</div> <!-- HEADER end -->
+		<br>
 		<!-- SPOOL FILES -->
 		<div>
-		<table>
-			<tr>
-				<th>Date</th>
-				<th>Time</th>
-				<th>Class</th>
-				<th>Printer</th>
-				<th>Room</th>
-				<th>Job Type</th>
-				<th>Job Number</th>
-				<th>Job Name</th>
-				<th>File</th>
-				<th></th>
-			</tr>
-			<?php
-				for($i = 0; $i < sizeof($directories); $i++){
-					$dir = $directories[$i];
-					$dirname = explode("/", $dir);
-					$dirlast = $dirname[sizeof($dirname) - 1];
-					echo("<tr>");
-					if($types[$i] == 's'){
-						echo("<td></td>");
-					}
-
-					$files = array_diff(scandir($dir), array('.', '..'));
-					$filecount = sizeof($files);
-
-					if($filecount == 0){
-						if($types[$i] == 's') echo("<td class='dir' colspan='8'>" . $dirlast . " (" . $filecount .  ")" . "</td>");
-						else echo("<td class='dir' colspan='9'>" . $dirlast . " (" . $filecount .  ")" . "</td>");
-
-						echo("<td><a href='purge.php?ftype=dir&fname=" . $dir . "'><img src='purge.png' width = '20' height = '20'/></a></td>");
-					}else{
-						echo("<td class='dir' colspan='10'>" . $dirlast . " (" . $filecount .  ")" . "</td>");
-					}
-					echo("</tr>");
-
-					foreach($files as $filename) {
-						if(strpos($filename, 'pdf') > 0){
-							$jobinfo = explode("_", $filename);
-							$jobdate = formatDate($jobinfo[0]);
-							$jobtime = formatTime($jobinfo[1]);
-							$jobclass = $jobinfo[2];
-							$jobprntroom = explode("-",$jobinfo[3]);
-							$jobprinter = $jobprntroom[0];
-							if(count($jobprntroom) > 1){
-								$jobroom = $jobprntroom[1];
-							}else{
-								$jobroom = '';
-							}
-							$jobtype = getJobType($jobinfo[4]);
-							$jobnumber = getJobNumber($jobinfo[4]);
-							$jobnameext = explode(".", $jobinfo[5]);
-							$jobname = $jobnameext[0];
-							$jobextension = $jobnameext[1];
-
+			<center>
+				<table>
+					<tr>
+						<th>Date</th>
+						<th>Time</th>
+						<th>Class</th>
+						<th>Printer</th>
+						<th>Room</th>
+						<th>Job Type</th>
+						<th>Job Number</th>
+						<th>Job Name</th>
+						<th>File</th>
+						<th></th>
+					</tr>
+					<?php
+						for($i = 0; $i < sizeof($directories); $i++){
+							$dir = $directories[$i];
+							$dirname = explode("/", $dir);
+							$dirlast = $dirname[sizeof($dirname) - 1];
 							echo("<tr>");
-							echo("<td>" . $jobdate . "</td>");
-							echo("<td>" . $jobtime . "</td>");
-							echo("<td align='center'>" . $jobclass . "</td>");
-							echo("<td>" . $jobprinter . "</td>");
-							echo("<td>" . $jobroom . "</td>");
-							echo("<td align='center'>" . $jobtype . "</td>");
-							echo("<td align='center'>" . $jobnumber . "</td>");
-							echo("<td>" . $jobname . "</td>");
-							echo("<td>" . "<a href='" . $dir . "/" . $filename . "' target='_blank'>" . $filename . "</td>");
-							echo("<td><a href='purge.php?ftype=file&fname=" . $dir . "/" . $filename . "'><img src='purge.png' width = '20' height = '20'/></a></td>");
+							if($types[$i] == 's'){
+								echo("<td class='subdir'></td>");
+							}
+
+							$files = array_diff(scandir($dir), array('.', '..'));
+							$filecount = sizeof($files);
+
+							if($filecount == 0){
+								if($types[$i] == 's') echo("<td class='subdir' colspan='8'>" . $dirlast . " (" . $filecount .  ")" . "</td>");
+								else echo("<td class='dir' colspan='9'>" . $dirlast . " (" . $filecount .  ")" . "</td>");
+
+								echo("<td class='dir'><a href='purge.php?ftype=dir&fname=" . $dir . "'><img src='purge.png' width = '20' height = '20'/></a></td>");
+							}else{
+								if($types[$i] == 's') echo("<td class='subdir' colspan='10'>" . $dirlast . " (" . $filecount .  ")" . "</td>");
+								else echo("<td class='dir' colspan='10'>" . $dirlast . " (" . $filecount .  ")" . "</td>");
+							}
 							echo("</tr>");
+
+							foreach($files as $filename) {
+								if(strpos($filename, 'pdf') > 0){
+									$jobinfo = explode("_", $filename);
+									$jobdate = formatDate($jobinfo[0]);
+									$jobtime = formatTime($jobinfo[1]);
+									$jobclass = $jobinfo[2];
+									$jobprntroom = explode("-",$jobinfo[3]);
+									$jobprinter = $jobprntroom[0];
+									if(count($jobprntroom) > 1){
+										$jobroom = $jobprntroom[1];
+									}else{
+										$jobroom = '';
+									}
+									$jobtype = getJobType($jobinfo[4]);
+									$jobnumber = getJobNumber($jobinfo[4]);
+									$jobnameext = explode(".", $jobinfo[5]);
+									$jobname = $jobnameext[0];
+									$jobextension = $jobnameext[1];
+
+									echo("<tr>");
+									echo("<td>" . $jobdate . "</td>");
+									echo("<td>" . $jobtime . "</td>");
+									echo("<td align='center'>" . $jobclass . "</td>");
+									echo("<td>" . $jobprinter . "</td>");
+									echo("<td>" . $jobroom . "</td>");
+									echo("<td align='center'>" . $jobtype . "</td>");
+									echo("<td align='center'>" . $jobnumber . "</td>");
+									echo("<td>" . $jobname . "</td>");
+									echo("<td>" . "<a href='" . $dir . "/" . $filename . "' target='_blank'>" . $filename . "</td>");
+									echo("<td><a href='purge.php?ftype=file&fname=" . $dir . "/" . $filename . "'><img src='purge.png' width = '20' height = '20'/></a></td>");
+									echo("</tr>");
+								}
+							}
 						}
-					}
-				}
-			?>
-		</table>
+					?>
+				</table>
+			</center>
 		</div> <!-- SPOOL FILES end -->
 	</body>
 </html>
