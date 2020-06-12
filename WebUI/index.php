@@ -46,9 +46,12 @@ foreach($dirs as $dir){
 
 # **** FUNCTIONS ****
 ############################################################
-# Returns a date formatted as dd/mm/yy
+# Returns a date formatted as dd/mm/yyyy
+# Requires mvssplitspl >= v0.2.0
+#   otherwise date will be dd/mm/yy
+#   and will not be displayed correctly
 function formatDate($date){
-	return substr($date, 4, 2) . '/' . substr($date, 2, 2) . '/' . substr($date, 0, 2);
+	return substr($date, 6, 2) . '/' . substr($date, 4, 2) . '/' . substr($date, 0, 4);
 }
 
 ############################################################

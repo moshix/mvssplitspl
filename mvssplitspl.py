@@ -17,17 +17,11 @@ DEPENDENCIES:
 	  need to installed and in the path of your computer running this.
 
 BUGS:
-	* Some error when processing prt00f.txt
-		Traceback (most recent call last):
-		File "./mvssplitspl.py", line 173, in <module>
-			splitter.splitJobs()
-		File "./mvssplitspl.py", line 94, in splitJobs
-			line = self.prtfile.readline()
-		File "/usr/lib/python3.6/codecs.py", line 321, in decode
-			(result, consumed) = self._buffer_decode(data, self.errors, final)
-		UnicodeDecodeError: 'utf-8' codec can't decode byte 0xd7 in position 4862: invalid continuation byte
+	* Some error when processing CLASS Z printouts
+		UnicodeDecodeError: 'utf-8' codec can't decode byte 0xd7 in position 0: invalid continuation byte
 
 CHANGELOG:
+	v0.2.0 - Beta release: If jobDateYear is the same as current date, add century to the filename (e.g. 20 => 2020)
 	v0.1.1: Beta release: Solved bugs with PDF filename: jobType missing, no leading zeros when hour < 10, job name truncated
 	v0.1.0: Beta release: First release
 
@@ -60,6 +54,7 @@ import argparse
 import subprocess
 import os
 import socket
+import datetime
 
 __pgmname__ = "mvssplitspl"
 __version__ = "v0.1.1"
@@ -231,6 +226,14 @@ class SplitSpool:
 	#   based on the job information
 	def composeOutputFilename(self):
 		# example: 200609_113744_A_PRINTER1-ROOM_J942_PRINTSR
+		
+		# v0.2.0 - If jobDateYear is the same as current date, 
+		#          add century to the filename (e.g. 20 => 2020)
+		yearnow = str(datetime.datetime.now().year)[2:4]
+		centurynow = str(datetime.datetime.now().year)[0:2]
+		if(int(yearnow) == int(self.jobDateYear)):
+			self.jobDateYear = str(datetime.datetime.now().year)
+		
 		filename = \
 			self.jobDateYear + self.jobDateMonth + self.jobDateDay \
 			+ "_" + self.jobTimeHour + self.jobTimeMinutes + self.jobTimeSeconds \
