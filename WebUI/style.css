@@ -1,0 +1,41 @@
+table {
+	border: 1px solid black;
+	border-collapse: collapse;
+	display: inline-block;
+}
+.dir{
+	border: 0px;
+}
+th {
+	background-color: black;
+	color: white;
+	padding: 5px;
+	text-align: center;
+	font-variant: small-caps;
+}
+td {
+	border: 1px solid black;
+	border-collapse: collapse;
+	padding: 5px;
+	background-color: #e1f7d5;
+}
+.dir {
+	background-color: #5d9c6d;
+	font-weight: bold;
+}
+.app{
+	border: 0px;
+	text-align: center;
+	padding-left: 15px;
+	padding-right: 15px;
+	padding-top: 2px;
+	padding-bottom: 2px;
+	background-color: #ffd480;
+}
+div {
+	background-color: #cceeff;
+	width: 90%;
+	padding: 10px;
+	border: 5px solid gray;
+	margin: 5px;
+}
