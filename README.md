@@ -20,7 +20,7 @@ With optional Web UI (see below).
 ---
 
 ## Usage
-mvssplitspl [-h] [-v] [-in INFILE] [-a ADDRESS] [-p PORT] [-r] [-c] outdir
+mvssplitspl [-h] [-v] [-in INFILE] [-a ADDRESS] [-p PORT] [-r] [-c] [-d] outdir
 
 ```
 positional arguments:
@@ -38,6 +38,7 @@ optional arguments:
                         needed.
   -c, --sepmsgclass     Separate outputs per MSGCLASS. Directory created if
                         needed.
+  -d, --debug           Do not delete .prt files
 ```
 
 To separate by room (-r, --seproom) the JCL must have, right after the JOB card: */\*JOBPARM ROOM=xxxx*
