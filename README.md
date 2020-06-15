@@ -76,6 +76,8 @@ Clicking in the bin icon will delete the file from your disk.
 
 If a folder contains no files (number shown in parenthesis), a bin icon will appear and you can delete the folder from your disk.
 
+If the jobdate is today, the row is highlighted for easy identification.
+
 ## Installation
 
 * Put all the files in the a directory one level above the directory where the PDFs are created.
