@@ -25,7 +25,7 @@ SOFTWARE.
 
 # **** DEFINES ****
 define('APP_NAME', 'MVS Spool Viewer');
-define('APP_VERSION', 'v1.0.0');
+define('APP_VERSION', 'v1.1.0');
 
 # **** GLOBAL VARIABLES ****
 $sysname = exec("uname -n");
@@ -61,10 +61,23 @@ function formatTime($time){
 }
 
 ############################################################
+# Returns true if the Job date is the same as today,
+#   otherwise false
+function isJobDateIsToday($jobinfo){
+	$jobdate = substr($jobinfo, 0, 4) . '-' . substr($jobinfo, 4, 2) . '-' . substr($jobinfo, 6, 2);
+	$todaydate = date("Y-m-d");
+
+	if($jobdate == $todaydate)
+		return true;
+	else
+		return false;
+}
+
+############################################################
 # Returns a description for job types J, S and T
 function getJobType($info){
 	$type = substr($info, 0, 1);
-	
+
 	if($type == 'J') return 'JOB';
 	elseif($type == 'S') return 'STC';
 	elseif($type == 'T') return 'TSU';
@@ -113,6 +126,7 @@ function getJobNumber($info){
 						<th></th>
 					</tr>
 					<?php
+						/* Read all directories */
 						for($i = 0; $i < sizeof($directories); $i++){
 							$dir = $directories[$i];
 							$dirname = explode("/", $dir);
@@ -125,6 +139,7 @@ function getJobNumber($info){
 							$files = array_diff(scandir($dir), array('.', '..'));
 							$filecount = sizeof($files);
 
+							/* If there are no files, allow delete( purge) of the directory */
 							if($filecount == 0){
 								if($types[$i] == 's') echo("<td class='subdir' colspan='8'>" . $dirlast . " (" . $filecount .  ")" . "</td>");
 								else echo("<td class='dir' colspan='9'>" . $dirlast . " (" . $filecount .  ")" . "</td>");
@@ -136,8 +151,10 @@ function getJobNumber($info){
 							}
 							echo("</tr>");
 
+							/* Read all files of the directory */
 							foreach($files as $filename) {
 								if(strpos($filename, 'pdf') > 0){
+									/* Get the Job informatio */
 									$jobinfo = explode("_", $filename);
 									$jobdate = formatDate($jobinfo[0]);
 									$jobtime = formatTime($jobinfo[1]);
@@ -151,21 +168,27 @@ function getJobNumber($info){
 									}
 									$jobtype = getJobType($jobinfo[4]);
 									$jobnumber = getJobNumber($jobinfo[4]);
-									$jobnameext = explode(".", $jobinfo[5]);
-									$jobname = $jobnameext[0];
-									$jobextension = $jobnameext[1];
+									$jobname = substr($jobinfo[5], 0, strlen($jobinfo[5]) - 4);
 
+									/* Print row */
 									echo("<tr>");
-									echo("<td>" . $jobdate . "</td>");
-									echo("<td>" . $jobtime . "</td>");
-									echo("<td align='center'>" . $jobclass . "</td>");
-									echo("<td>" . $jobprinter . "</td>");
-									echo("<td>" . $jobroom . "</td>");
-									echo("<td align='center'>" . $jobtype . "</td>");
-									echo("<td align='center'>" . $jobnumber . "</td>");
-									echo("<td>" . $jobname . "</td>");
-									echo("<td>" . "<a href='" . $dir . "/" . $filename . "' target='_blank'>" . $filename . "</td>");
-									echo("<td><a href='purge.php?ftype=file&fname=" . $dir . "/" . $filename . "'><img src='purge.png' width = '20' height = '20'/></a></td>");
+
+									/* If jobdate is today, highlight the row with another colour */
+									if(isJobDateIsToday($jobinfo[0]))
+										$class = "today";
+									else
+										$class = "";
+
+									echo("<td class='" . $class . "'>" . $jobdate . "</td>");
+									echo("<td class='" . $class . "'>" . $jobtime . "</td>");
+									echo("<td class='" . $class . "' align='center'>" . $jobclass . "</td>");
+									echo("<td class='" . $class . "'>" . $jobprinter . "</td>");
+									echo("<td class='" . $class . "'>" . $jobroom . "</td>");
+									echo("<td class='" . $class . "' align='center'>" . $jobtype . "</td>");
+									echo("<td class='" . $class . "' align='center'>" . $jobnumber . "</td>");
+									echo("<td class='" . $class . "'>" . $jobname . "</td>");
+									echo("<td class='" . $class . "'>" . "<a href='" . $dir . "/" . $filename . "' target='_blank'>" . $filename . "</td>");
+									echo("<td class='" . $class . "'><a href='purge.php?ftype=file&fname=" . $dir . "/" . $filename . "'><img src='purge.png' width = '20' height = '20'/></a></td>");
 									echo("</tr>");
 								}
 							}
