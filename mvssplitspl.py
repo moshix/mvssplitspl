@@ -21,9 +21,12 @@ BUGS:
 		UnicodeDecodeError: 'utf-8' codec can't decode byte 0xd7 in position 0: invalid continuation byte
 
 CHANGELOG:
-	v0.2.0 - Beta release: If jobDateYear is the same as current date, add century to the filename (e.g. 20 => 2020)
-	v0.1.1: Beta release: Solved bugs with PDF filename: jobType missing, no leading zeros when hour < 10, job name truncated
-	v0.1.0: Beta release: First release
+	v0.4.0: Beta release - Separated Programmer's Name fron Job Name.
+						 - Reverted v0.3.0, as it doesn't solve the issue.
+	v0.3.0: Beta release - Solved bug that created a blank page at the beginning.
+	v0.2.0: Beta release - If jobDateYear is the same as current date, add century to the filename (e.g. 20 => 2020).
+	v0.1.1: Beta release - Solved bugs with PDF filename: jobType missing, no leading zeros when hour < 10, job name truncated.
+	v0.1.0: Beta release - First release.
 
 ---------------------------LICENSE NOTICE-------------------------------- 
 MIT License
@@ -57,7 +60,7 @@ import socket
 import datetime
 
 __pgmname__ = "mvssplitspl"
-__version__ = "v0.2.0"
+__version__ = "v0.4.0 Beta"
 
 ################################################################
 class SplitSpool:
@@ -69,6 +72,7 @@ class SplitSpool:
 		self.jobType = ''
 		self.jobNumber = ''
 		self.jobName = ''
+		self.jobProgrammerName = ''
 		self.jobRoom = ''
 		self.jobTimeHour = ''
 		self.jobTimeMinutes = ''
@@ -115,9 +119,22 @@ class SplitSpool:
 	#  and for each line call processLine
 	# Lines are detected by Line Feed (\n)
 	def listenToSocket(self):
+		data = ''
 		buffer = ''
+		isFirstChar = True
+
 		while True:
 			data = self.sockdev.recv(1).decode('utf-8')
+
+			# v0.3.0 - When a 0x0C character is found 
+			#          as the first character, it makes
+			#          a Form Feed (FF), which creates
+			#          a blank page at the beginning.
+			#if isFirstChar:
+			#	isFirstChar = False
+			#	if hex(ord(data[0:1])) == '0xc':
+			#		data = ' '
+
 			buffer = buffer + data
 			if data == '\n': # Line Feed
 				self.processLine(buffer)
@@ -127,12 +144,26 @@ class SplitSpool:
 	# Read all lines of the input file,
 	#  and for each line call processLine
 	def readFile(self, inputfile):
+		isFirstChar = True
 		self.prtfile = open(inputfile, "r")
 
 		while True:
 			line = self.prtfile.readline()
+
 			if not line:
 				break
+
+			# v0.3.0 - When a 0x0C character is found 
+			#          as the first character, it makes
+			#          a Form Feed (FF), which creates
+			#          a blank page at the beginning.
+			#if isFirstChar:
+			#	isFirstChar = False
+			#	if hex(ord(line[0:1])) == '0xc':
+			#		print("Initial FF removed")
+			#		print(hex(ord(line[0:1])))
+			#		line = ' ' + line[1:]
+
 			self.processLine(line)
 
 		self.prtfile.close()
@@ -165,18 +196,19 @@ class SplitSpool:
 	# Get Job's information details,
 	#   used to compose the final filename of the PDF
 	def extractJobInfo(self, line):
-		self.jobMSGCLASS	= line[4:5]
-		self.jobNumber		= line[18:22].strip()
-		self.jobName		= line[24:55].strip()
-		self.jobRoom		= line[61:65].strip()
-		self.jobTimeHour	= (str(line[67:69]).strip()).zfill(2)
-		self.jobTimeMinutes	= line[70:72]
-		self.jobTimeSeconds	= line[73:75]
-		self.jobTimeAMPM	= line[76:78]
-		self.jobDateDay		= line[79:81]
-		self.jobDateMonth	= str(self.months.index(line[82:85])).zfill(2)
-		self.jobDateYear	= line[86:88]
-		self.jobPrinter		= line[90:98]
+		self.jobMSGCLASS		= line[4:5]
+		self.jobNumber			= line[18:22].strip()
+		self.jobName			= line[24:32].strip()
+		self.jobProgrammerName	= line[34:55].strip()
+		self.jobRoom			= line[61:65].strip()
+		self.jobTimeHour		= (str(line[67:69]).strip()).zfill(2)
+		self.jobTimeMinutes		= line[70:72]
+		self.jobTimeSeconds		= line[73:75]
+		self.jobTimeAMPM		= line[76:78]
+		self.jobDateDay			= line[79:81]
+		self.jobDateMonth		= str(self.months.index(line[82:85])).zfill(2)
+		self.jobDateYear		= line[86:88]
+		self.jobPrinter			= line[90:98]
 
 		# If necessary, convert hours to 24h format
 		if self.jobTimeAMPM == "PM":
@@ -248,6 +280,10 @@ class SplitSpool:
 		filename = filename \
 			+ "_" + self.jobType + self.jobNumber \
 			+ "_" + self.jobName
+
+		if self.jobProgrammerName:
+			filename = filename \
+			+ "_" + self.jobProgrammerName
 
 		return filename
 
