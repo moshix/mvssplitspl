@@ -23,11 +23,18 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
+/*
+CHANGELOG:
+	v1.2.1: Solved bug when echoing $numcolumns - n should be ($numcolumns - n)
+	v1.2.0: Separated Programmer's Name from Job Name
+*/
+
 # **** DEFINES ****
 define('APP_NAME', 'MVS Spool Viewer');
-define('APP_VERSION', 'v1.1.0');
+define('APP_VERSION', 'v1.2.1');
 
 # **** GLOBAL VARIABLES ****
+$numcolumns = 11;
 $sysname = exec("uname -n");
 $path = "./MVS";   ######## CHANGE THIS TO YOUR DIRECTORY FOLDER
 $directories = array();
@@ -122,6 +129,7 @@ function getJobNumber($info){
 						<th>Job Type</th>
 						<th>Job Number</th>
 						<th>Job Name</th>
+						<th>Programmer's Name</th>
 						<th>File</th>
 						<th></th>
 					</tr>
@@ -141,13 +149,13 @@ function getJobNumber($info){
 
 							/* If there are no files, allow delete( purge) of the directory */
 							if($filecount == 0){
-								if($types[$i] == 's') echo("<td class='subdir' colspan='8'>" . $dirlast . " (" . $filecount .  ")" . "</td>");
-								else echo("<td class='dir' colspan='9'>" . $dirlast . " (" . $filecount .  ")" . "</td>");
+								if($types[$i] == 's') echo("<td class='subdir' colspan='" . ($numcolumns - 2) . "'>" . $dirlast . " (" . $filecount .  ")" . "</td>");
+								else echo("<td class='dir' colspan='" . ($numcolumns - 1) . "'>" . $dirlast . " (" . $filecount .  ")" . "</td>");
 
 								echo("<td class='dir'><a href='purge.php?ftype=dir&fname=" . $dir . "'><img src='purge.png' width = '20' height = '20'/></a></td>");
 							}else{
-								if($types[$i] == 's') echo("<td class='subdir' colspan='10'>" . $dirlast . " (" . $filecount .  ")" . "</td>");
-								else echo("<td class='dir' colspan='10'>" . $dirlast . " (" . $filecount .  ")" . "</td>");
+								if($types[$i] == 's') echo("<td class='subdir' colspan='" . $numcolumns . "'>" . $dirlast . " (" . $filecount .  ")" . "</td>");
+								else echo("<td class='dir' colspan='" . $numcolumns . "'>" . $dirlast . " (" . $filecount .  ")" . "</td>");
 							}
 							echo("</tr>");
 
@@ -168,7 +176,13 @@ function getJobNumber($info){
 									}
 									$jobtype = getJobType($jobinfo[4]);
 									$jobnumber = getJobNumber($jobinfo[4]);
-									$jobname = substr($jobinfo[5], 0, strlen($jobinfo[5]) - 4);
+									if(sizeof($jobinfo) == 7){
+										$jobname = $jobinfo[5];
+										$jobprogrammername = substr($jobinfo[6], 0, strlen($jobinfo[6]) - 4);	// Remove the file extension (.pdf)
+									}else{
+										$jobname = substr($jobinfo[5], 0, strlen($jobinfo[5]) - 4); // Remove the file extension (.pdf)
+										$jobprogrammername = '';
+									}
 
 									/* Print row */
 									echo("<tr>");
@@ -187,6 +201,7 @@ function getJobNumber($info){
 									echo("<td class='" . $class . "' align='center'>" . $jobtype . "</td>");
 									echo("<td class='" . $class . "' align='center'>" . $jobnumber . "</td>");
 									echo("<td class='" . $class . "'>" . $jobname . "</td>");
+									echo("<td class='" . $class . "'>" . $jobprogrammername . "</td>");
 									echo("<td class='" . $class . "'>" . "<a href='" . $dir . "/" . $filename . "' target='_blank'>" . $filename . "</td>");
 									echo("<td class='" . $class . "'><a href='purge.php?ftype=file&fname=" . $dir . "/" . $filename . "'><img src='purge.png' width = '20' height = '20'/></a></td>");
 									echo("</tr>");
