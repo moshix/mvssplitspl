@@ -21,7 +21,8 @@ BUGS:
 		UnicodeDecodeError: 'utf-8' codec can't decode byte 0xd7 in position 0: invalid continuation byte
 
 CHANGELOG:
-	v0.4.0: Beta release - Separated Programmer's Name fron Job Name.
+	v0.4.1: Beta release - Solved bug on conversion to 24h format.
+	v0.4.0: Beta release - Separated Programmer's Name from Job Name.
 						 - Reverted v0.3.0, as it doesn't solve the issue.
 	v0.3.0: Beta release - Solved bug that created a blank page at the beginning.
 	v0.2.0: Beta release - If jobDateYear is the same as current date, add century to the filename (e.g. 20 => 2020).
@@ -60,7 +61,7 @@ import socket
 import datetime
 
 __pgmname__ = "mvssplitspl"
-__version__ = "v0.4.0 Beta"
+__version__ = "v0.4.1 Beta"
 
 ################################################################
 class SplitSpool:
@@ -211,8 +212,7 @@ class SplitSpool:
 		self.jobPrinter			= line[90:98]
 
 		# If necessary, convert hours to 24h format
-		if self.jobTimeAMPM == "PM":
-			self.jobTimeHour = self.convertAMto24h(self.jobTimeHour)
+		self.convertTo24h(int(self.jobTimeHour))
 
 		# Detect type of job
 		if line.find("JOB", 14,17) > 0:
@@ -335,13 +335,18 @@ class SplitSpool:
 
 	############################################################
 	# Convert hour to 24h format
-	def convertAMto24h(self, hour):
-		hour24 = int(hour) + 12
+	#   convert 12AM to 00
+	#   convert from 1PM to 11Pm, to 13 to 23
+	def convertTo24h(self, hour):
+		hour24 = hour
 
-		if hour24 == 24:
+		if self.jobTimeAMPM == "PM":
+			if hour < 12: # convert from 1PM to 11PM, to 13 to 23
+				hour24 = hour + 12
+		elif hour == 12: # convert 12AM to 00
 			hour24 = 0
 
-		return str(hour24).zfill(2)
+		self.jobTimeHour = str(hour24).zfill(2)
 
 ################################################################
 if __name__ == "__main__":
