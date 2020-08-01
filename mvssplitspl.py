@@ -21,6 +21,7 @@ BUGS:
 		UnicodeDecodeError: 'utf-8' codec can't decode byte 0xd7 in position 0: invalid continuation byte
 
 CHANGELOG:
+	v0.4.2: Beta release - Solved bug because of typo on the months' list
 	v0.4.1: Beta release - Solved bug on conversion to 24h format.
 	v0.4.0: Beta release - Separated Programmer's Name from Job Name.
 						 - Reverted v0.3.0, as it doesn't solve the issue.
@@ -61,7 +62,7 @@ import socket
 import datetime
 
 __pgmname__ = "mvssplitspl"
-__version__ = "v0.4.1 Beta"
+__version__ = "v0.4.2 Beta"
 
 ################################################################
 class SplitSpool:
@@ -89,7 +90,7 @@ class SplitSpool:
 		self.jobLines = list()
 		self.countEndJobLine = 0
 		self.endJob = False
-		self.months = ["", "JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AGO", "SEP", "OCT", "NOV", "DEC"]
+		self.months = ["", "JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"]
 		
 		self.seproom = seproom
 		self.sepmsgclass = sepmsgclass
@@ -122,7 +123,7 @@ class SplitSpool:
 	def listenToSocket(self):
 		data = ''
 		buffer = ''
-		isFirstChar = True
+		#isFirstChar = True
 
 		while True:
 			data = self.sockdev.recv(1).decode('utf-8')
